@@ -11,8 +11,8 @@ on:
         required: true
 
 jobs:
-  release-images:
-    runs-on: ubuntu-latest
+  release:
+    runs-on: [self-hosted, x64, linux, eks, us, general, prod]
 
     steps:
       - name: Checkout
