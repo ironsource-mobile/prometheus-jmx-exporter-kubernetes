@@ -5,12 +5,42 @@ cacheRules: true
 whitelistObjectNames:
   - "kafka.consumer:*"
   - "kafka.producer:*"
+  - "kafka.streams:*"
 blacklistObjectNames:
+  - "kafka.streams:type=kafka-metrics-count"
   - "kafka.admin.client:*"
   - "kafka.consumer:type=*,id=*"
   - "kafka.producer:type=*,id=*"
   - "kafka.*:type=kafka-metrics-count,*"
 rules:
+  - pattern: "kafka.streams<type=(.+), thread-id=(.+), task-id=(.+), (.+)=(.+)><>(.+):"
+    name: kafka_streams_$1_$6
+    type: GAUGE
+    labels:
+      thread_id: "$2"
+      task_id: "$3"
+      $4: "$5"
+  # kafka.streams:type=stream-task-metrics,task-id=*,thread-id=*
+  - pattern: "kafka.streams<type=(.+), thread-id=(.+), task-id=(.+)><>(.+):"
+    name: kafka_streams_$1_$4
+    type: GAUGE
+    labels:
+      thread_id: "$2"
+      task_id: "$3"
+  # kafka.streams:type=stream-metrics,client-id=*
+  - pattern: "kafka.streams<type=stream-metrics, (.+)=(.+)><>(state|alive-stream-threads|commit-id|version|application-id): (.+)"
+    name: kafka_streams_stream_metrics
+    value: 1
+    type: UNTYPED
+    labels:
+      $1: "$2"
+      $3: "$4"
+  # kafka.streams:type=stream-thread-metrics,thread-id=*
+  - pattern: "kafka.streams<type=(.+), (.+)=(.+)><>([^:]+)"
+    name: kafka_streams_$1_$4
+    type: GAUGE
+    labels:
+      $2: "$3"
   # "kafka.consumer:type=app-info,client-id=*"
   # "kafka.producer:type=app-info,client-id=*"
   - pattern: "kafka.(.+)<type=app-info, client-id=(.+)><>(.+): (.+)"
